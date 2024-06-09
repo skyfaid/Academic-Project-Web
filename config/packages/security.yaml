@@ -1,0 +1,45 @@
+security:
+    enable_authenticator_manager: true
+
+    password_hashers:
+        App\Entity\Utilisateurs:
+            algorithm: auto
+            cost: 12 # Adjust the cost factor as needed for your testing environment
+            hash_algorithm: bcrypt
+
+    providers:
+        app_user_provider: # This replaces 'users_in_memory' to use your entity for user authentication
+            entity:
+                class: App\Entity\Utilisateurs
+                property: email # Assumes that 'email' is the unique identifier for your user entity
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider # Use the defined provider above
+            logout:
+                path: app_logout # Route to handle logout
+                target: app_login # Route to redirect to after logout, adjusted to your homepage route name
+            form_login: # Form login authentication
+                login_path: app_login # Route name for the login page
+                check_path: app_login # Route name for submitting the login form
+                username_parameter: email
+                password_parameter: password
+            custom_authenticator: App\Security\SecurityAuthenticator
+            entry_point: App\Security\SecurityAuthenticator
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                always_remember_me: true
+
+   # access_control:
+       # - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY } # Allow access to login page without being authenticated
+       # - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY } # Allow access to register page without being authenticated
+        #- { path: ^/dashboard/, roles: admin } # Adjusted for your admin access path and role
+       # - { path: ^/home/blog, roles: user } 

@@ -1,0 +1,81 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block title %}
+    ArtHub - Users
+{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>Users table</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table id="usersTable" class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Pseudo/gender</th>
+                                        <th class="text-center">Role</th>
+                                        <th class="text-center">Joined</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody> {# Add tbody for the table body #}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {# Include jQuery and DataTables JavaScript #}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+$(document).ready(function() {
+    var table = $('#usersTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "{{ path('ajax_users_list') }}",
+        "columns": [
+            {"data": "user"},
+            {"data": "pseudo_gender"},
+            {"data": "role"},
+            {"data": "joined"},
+            {"data": "action", "orderable": false}
+        ],
+        "order": [[3, "desc"]]
+    });
+
+    $('#usersTable tbody').on('click', '.ban-user', function() {
+        var userId = $(this).data('user-id');
+        $.ajax({
+            url: '{{ path('ajax_toggle_active', {'id': '__id__'}) }}'.replace('__id__', userId),
+            method: 'POST',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    // Update the icon based on the new status
+                    var iconClass = response.newStatus ? 'fas fa-check' : 'fas fa-ban';
+                    var element = $('a[data-user-id="' + userId + '"] i');
+                    element.removeClass('fas fa-ban fa-check').addClass(iconClass);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('Error toggling user status.');
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
